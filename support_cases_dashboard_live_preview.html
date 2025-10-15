@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Support Cases Dashboard – Leadership View</title>
+  <style>
+  /* =========================
+     Support Cases Dashboard
+     Author: ChatGPT "Developer"
+     ========================= */
+
+  :root{
+    --bg: #0f172a;          /* slate-900 */
+    --panel: #111827;       /* gray-900 */
+    --card: #111827;
+    --surface: #0b1220;
+    --text: #e5e7eb;        /* gray-200 */
+    --muted: #9ca3af;       /* gray-400 */
+    --soft: #1f2937;        /* gray-800 */
+    --border: #1f2937;
+    --accent: #60a5fa;      /* blue-400 */
+    --green: #34d399;
+    --red: #f87171;
+    --amber: #fbbf24;
+    --purple: #c4b5fd;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{
+    margin:0;
+    padding:0;
+    background: linear-gradient(180deg, #0b1020, #0a0f1a 60%, #070b14);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    line-height: 1.45;
+  }
+
+  .container{
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  header{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  h1{
+    font-size: 28px;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+
+  .subtle{
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .section{
+    margin-top: 22px;
+  }
+
+  .card{
+    background: radial-gradient(1200px 80% at -10% -40%, rgba(96,165,250,.08), transparent 60%), var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  }
+  .card.compact{ padding: 12px 12px; }
+  .card.compact .chart-title{ font-size: 12px; }
+  .card.compact table thead th{ font-size: 11px; padding: 8px 10px; }
+  .card.compact table tbody td{ font-size: 12px; padding: 8px 10px; }
+  .card.compact.short{ padding: 6px 8px; }
+  .card.compact.short .chart-title{ font-size: 10.5px; margin-bottom: 4px; }
+  .card.compact.short table thead th{ font-size: 10px; padding: 4px 6px; }
+  .card.compact.short table tbody td{ font-size: 11px; padding: 4px 6px; line-height: 1.15; }
+
+  .grid{
+    display: grid;
+    gap: 14px;
+  }
+
+  .grid.kpis{
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .kpi{
+    display:flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .kpi h3{
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  .kpi .metric{
+    font-size: 28px;
+    font-weight: 800;
+  }
+
+  .kpi .delta{
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .delta.up::before{ content: "▲ "; color: var(--green); }
+  .delta.down::before{ content: "▼ "; color: var(--red); }
+
+  /* Chart cards */
+  .chart-title{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .charts{
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  /* Table */
+  .table-wrap{
+    overflow: auto;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+    background: var(--panel);
+  }
+
+  thead th{
+    position: sticky;
+    top: 0;
+    background: rgba(10, 15, 26, 0.9);
+    backdrop-filter: blur(4px);
+    text-align: left;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  tbody td{
+    font-size: 14px;
+    padding: 14px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+  }
+
+  tbody tr:hover{
+    background: rgba(96,165,250,.05);
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(196,181,253,.12);
+    color: #e9d5ff;
+    border: 1px solid rgba(196,181,253,.25);
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .dot{
+    display:inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--purple);
+    box-shadow: 0 0 0 3px rgba(196,181,253,.15);
+  }
+
+  .dot.low{ background: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.15) }
+  .dot.med{ background: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,.15) }
+  .dot.high{ background: #f87171; box-shadow: 0 0 0 3px rgba(248,113,113,.15) }
+  .priority{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .case-link{
+    color: #93c5fd;
+    text-decoration: none;
+  }
+  .case-link:hover{ text-decoration: underline; }
+
+  /* Pills for state */
+  .pill{
+    display:inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--soft);
+    background: rgba(255,255,255,.03);
+  }
+
+  /* Helper layout */
+  .two-col{
+    grid-template-columns: .85fr 1.15fr;
+  }
+  @media (max-width: 900px){
+    .two-col{ grid-template-columns: 1fr; }
+  }
+
+  /* Print-friendly */
+  @media print{
+    body{ background: #fff; color: #111; }
+    .card{ box-shadow:none; border: 1px solid #ddd; background: #fff; }
+    header{ border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+    .badge, .pill{ border: 1px solid #bbb; color: #111; }
+    .table-wrap{ border:1px solid #ddd;}
+    thead th{ background:#f5f5f5; color:#333; }
+  }</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Apple Cases Dashboard — Walmart</h1>
+        <div class="subtle">This dashboard provides an overview of Apple support cases related to macOS Tahoe 26 testing within Walmart, highlighting the weekly case flow (opened vs. closed) and resolution status. As a result, we, the Mac team, do not see any major issues or showstoppers that would prevent Mac users from upgrading on December 26.</div>
+      </div>
+      <div class="subtle">Owner: Mac Engineering Team</div>
+    </header>
+
+    <!-- TRENDS & MIX -->
+    <section class="section">
+      <div class="grid charts">
+        <div class="card">
+          <div class="chart-title">Opened vs Closed (last 8 weeks)</div>
+          <!-- Simple inline SVG placeholder; replace path 'd' with real data if desired -->
+          <svg viewBox="0 0 320 140" role="img" aria-label="Opened vs Closed trend">
+            <defs>
+              <linearGradient id="fade1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(96,165,250,.45)"/>
+                <stop offset="100%" stop-color="rgba(96,165,250,0)"/>
+              </linearGradient>
+              <linearGradient id="fade2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(52,211,153,.45)"/>
+                <stop offset="100%" stop-color="rgba(52,211,153,0)"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="320" height="140" fill="none" />
+            <!-- Closed -->
+            <path d="M10 110 L50 100 L90 95 L130 80 L170 75 L210 70 L250 68 L290 66"
+                  fill="none" stroke="#34d399" stroke-width="2.5" />
+            <!-- Opened -->
+            <path d="M10 112 L50 108 L90 104 L130 100 L170 103 L210 106 L250 108 L290 112"
+                  fill="none" stroke="#60a5fa" stroke-width="2.5" />
+          </svg>
+        </div>
+        <div class="card">
+          <div class="chart-title">Backlog over time</div>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Backlog trend">
+            <polyline
+              points="10,110 50,108 90,106 130,102 170,96 210,90 250,84 290,80"
+              fill="none" stroke="#93c5fd" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="card">
+          <div class="chart-title">Priority Distribution</div>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Priority mix">
+            <!-- Stacked bar (100%) -->
+            <rect x="20" y="40" width="260" height="30" fill="#60a5fa"/>
+            <rect x="20" y="40" width="40" height="30" fill="#fbbf24"/>
+            <rect x="60" y="40" width="10" height="30" fill="#f87171"/>
+            <text x="160" y="95" font-size="12.5" fill="#9ca3af" text-anchor="middle">Med</text>
+            <text x="260" y="95" font-size="12.5" fill="#9ca3af" text-anchor="middle">High</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- THEMES -->
+    <section class="section">
+      <div class="grid two-col">
+        <div class="card compact short">
+          <div class="chart-title">Top Issue Themes (last 30–90 days)</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Theme</th>
+                  <th>Cases</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Outlook (notifications/crash)</td><td>2</td></tr>
+                <tr><td>macOS Beta</td><td>1</td></tr>
+                <tr><td>Battery Usage</td><td>1</td></tr>
+                <tr><td>VPN / Network</td><td>1</td></tr>
+                <tr><td>Certificates / Trust</td><td>1</td></tr>
+                <tr><td>Search / Spotlight</td><td>1</td></tr>
+                <tr><td>SSO / Auth</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chart-title">Closure States</div>
+          <svg viewBox="0 0 320 140" role="img" aria-label="Closure state mix">
+            <!-- Donut chart with two segments: Completed vs Other -->
+            <circle cx="80" cy="70" r="48" fill="none" stroke="#1f2937" stroke-width="20"/>
+            <circle cx="80" cy="70" r="48" fill="none" stroke="#34d399" stroke-width="20"
+                    stroke-dasharray="220 31" stroke-linecap="butt" transform="rotate(-90 80 70)"/>
+            <circle cx="80" cy="70" r="48" fill="none" stroke="#93c5fd" stroke-width="20"
+                    stroke-dasharray="31 220" stroke-linecap="butt" transform="rotate(60 80 70)"/>
+            <g transform="translate(140,40)">
+              <rect x="0" y="0" width="12" height="12" fill="#34d399"/><text x="20" y="11" font-size="12" fill="#9ca3af">Completed</text>
+              <rect x="0" y="22" width="12" height="12" fill="#93c5fd"/><text x="20" y="33" font-size="12" fill="#9ca3af">Customer Inactivity/Other</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- CASE LIST -->
+    <section class="section">
+      <div class="card">
+        <div class="chart-title">Recent Cases (sample from screenshot)</div>
+        <div class="table-wrap">
+          <table role="table" aria-label="Recent support cases">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>State</th>
+                <th>Case Number</th>
+                <th>Site Name</th>
+                <th>Priority</th>
+                <th>Case Title</th>
+                <th>Case Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Completed</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102666580404">102666580404</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Outlook Calendar Notifications</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Customer Inactivity</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102683143955">102683143955</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>macOS 26 beta: Outlook quit…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Completed</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102688060600">102688060600</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Significant Battery Usage Increase o…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Completed</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102683248358">102683248358</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Questions about remediation when a…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Completed</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102678602685">102678602685</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Forcepoint Root CA not trusted on…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Completed</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102668261746">102668261746</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Unable to search filesystem using…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Completed</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102667550452">102667550452</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>Cisco VPN login</td>
+                <td>Carlos Garcia</td>
+              </tr>
+              <tr>
+                <td><span class="badge"><span class="dot"></span> Closed</span></td>
+                <td><span class="pill">Completed</span></td>
+                <td><a class="case-link" href="#" aria-label="Case 102653448595">102653448595</a></td>
+                <td>Walmart</td>
+                <td><span class="priority"><span class="dot low"></span>Low</span></td>
+                <td>AppSSO will not allow users to chan…</td>
+                <td>Carlos Garcia</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <details class="card">
+        <summary class="chart-title">Presenter Notes (click to expand)</summary>
+        <div class="subtle"></div>
+      </details>
+    </section>
+  </div>
+</body>
+</html>
